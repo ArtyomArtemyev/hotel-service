@@ -1,0 +1,28 @@
+# Spring properties
+spring:
+  application:
+    name: hotel-service
+  data:
+    mongodb.host: localhost
+    mongodb.port: 27017
+    mongodb.uri: mongodb://localhost/hotel-service-database
+    mongo.repositories.enabled: true
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: arthotel17@gmail.com
+    password: bsuir2017
+    protocol: smtps
+    localhost: localhost
+    smtps:
+      auth: true
+  http:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# HTTP Server (Tomcat) Port
+server:
+  port: 9094
+
+
