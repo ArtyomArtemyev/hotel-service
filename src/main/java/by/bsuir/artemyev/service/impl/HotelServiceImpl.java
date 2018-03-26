@@ -46,13 +46,14 @@ public class HotelServiceImpl implements HotelService {
     IdFileNameRepository idFileNameRepository;
 
     @Override
-    public void addHotel(String hotelInfo) {
+    public Hotel addHotel(String hotelInfo) {
         String hotelId = valueOf(randomUUID());
         JSONObject jsonObjectByHotelInfo = new JSONObject(hotelInfo);
         createTypeRoomsForHotel(hotelId, jsonObjectByHotelInfo.getJSONArray(TYPE_HOTELS_ROOMS));
         Hotel hotel = createHotel(hotelId, jsonObjectByHotelInfo);
         hotelRepository.save(hotel);
         logger.info("Successfully added hotel with id: " + hotelId);
+        return hotelRepository.findOne(hotelId);
     }
 
     @Override
@@ -64,8 +65,10 @@ public class HotelServiceImpl implements HotelService {
     }
 
     @Override
-    public void deleteHotel(String id) {
-        hotelRepository.delete(id);
+    public Hotel deleteHotel(String hotelId) {
+        hotelRepository.delete(hotelId);
+        logger.info("Successfully deleted hotel with id: " + hotelId);
+        return hotelRepository.findOne(hotelId);
     }
 
     private List<HotelDto> createHotelsDtos(List<Hotel> hotels, List<TypeRoom> typeRooms, List<IdFileName> idFileNames) {
