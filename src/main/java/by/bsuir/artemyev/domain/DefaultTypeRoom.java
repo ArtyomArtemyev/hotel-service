@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Document(collection = "type_rooms")
-public class TypeRoom implements Serializable, Cloneable {
+@Document(collection = "type_rooms_default")
+public class DefaultTypeRoom implements Serializable, Cloneable {
 
     @Id
     private String id;
@@ -31,11 +31,11 @@ public class TypeRoom implements Serializable, Cloneable {
     private String typeOfMainBed;
     private Boolean isExistChildBed;
 
-    public TypeRoom() {
+    public DefaultTypeRoom() {
         super();
     }
 
-    public TypeRoom(String id, String typeRoomName, String typeRoomWorldName, Boolean isExistLivingRoom, Boolean isExistSleepingRoom, Boolean isExistCabinet, Boolean isExistMeetingRoom, Boolean isExistShowingRoom, Boolean isExistBathRoom, Boolean isExistTV, Boolean isExistBar, Boolean isExistWiFi, Boolean isExistBalcony, Boolean isExistKitchen, Boolean isExistDiningRoom, Boolean isExistWCRoom, Boolean isExistAdditionalWCRoom, Integer countOfMan, String typeOfMainBed, Boolean isExistChildBed) {
+    public DefaultTypeRoom(String id, String typeRoomName, String typeRoomWorldName, Boolean isExistLivingRoom, Boolean isExistSleepingRoom, Boolean isExistCabinet, Boolean isExistMeetingRoom, Boolean isExistShowingRoom, Boolean isExistBathRoom, Boolean isExistTV, Boolean isExistBar, Boolean isExistWiFi, Boolean isExistBalcony, Boolean isExistKitchen, Boolean isExistDiningRoom, Boolean isExistWCRoom, Boolean isExistAdditionalWCRoom, Integer countOfMan, String typeOfMainBed, Boolean isExistChildBed) {
         this.id = id;
         this.typeRoomName = typeRoomName;
         this.typeRoomWorldName = typeRoomWorldName;
@@ -222,27 +222,27 @@ public class TypeRoom implements Serializable, Cloneable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TypeRoom typeRoom = (TypeRoom) o;
-        return Objects.equals(id, typeRoom.id) &&
-                Objects.equals(typeRoomName, typeRoom.typeRoomName) &&
-                Objects.equals(typeRoomWorldName, typeRoom.typeRoomWorldName) &&
-                Objects.equals(isExistLivingRoom, typeRoom.isExistLivingRoom) &&
-                Objects.equals(isExistSleepingRoom, typeRoom.isExistSleepingRoom) &&
-                Objects.equals(isExistCabinet, typeRoom.isExistCabinet) &&
-                Objects.equals(isExistMeetingRoom, typeRoom.isExistMeetingRoom) &&
-                Objects.equals(isExistShowingRoom, typeRoom.isExistShowingRoom) &&
-                Objects.equals(isExistBathRoom, typeRoom.isExistBathRoom) &&
-                Objects.equals(isExistTV, typeRoom.isExistTV) &&
-                Objects.equals(isExistBar, typeRoom.isExistBar) &&
-                Objects.equals(isExistWiFi, typeRoom.isExistWiFi) &&
-                Objects.equals(isExistBalcony, typeRoom.isExistBalcony) &&
-                Objects.equals(isExistKitchen, typeRoom.isExistKitchen) &&
-                Objects.equals(isExistDiningRoom, typeRoom.isExistDiningRoom) &&
-                Objects.equals(isExistWCRoom, typeRoom.isExistWCRoom) &&
-                Objects.equals(isExistAdditionalWCRoom, typeRoom.isExistAdditionalWCRoom) &&
-                Objects.equals(countOfMan, typeRoom.countOfMan) &&
-                Objects.equals(typeOfMainBed, typeRoom.typeOfMainBed) &&
-                Objects.equals(isExistChildBed, typeRoom.isExistChildBed);
+        DefaultTypeRoom that = (DefaultTypeRoom) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(typeRoomName, that.typeRoomName) &&
+                Objects.equals(typeRoomWorldName, that.typeRoomWorldName) &&
+                Objects.equals(isExistLivingRoom, that.isExistLivingRoom) &&
+                Objects.equals(isExistSleepingRoom, that.isExistSleepingRoom) &&
+                Objects.equals(isExistCabinet, that.isExistCabinet) &&
+                Objects.equals(isExistMeetingRoom, that.isExistMeetingRoom) &&
+                Objects.equals(isExistShowingRoom, that.isExistShowingRoom) &&
+                Objects.equals(isExistBathRoom, that.isExistBathRoom) &&
+                Objects.equals(isExistTV, that.isExistTV) &&
+                Objects.equals(isExistBar, that.isExistBar) &&
+                Objects.equals(isExistWiFi, that.isExistWiFi) &&
+                Objects.equals(isExistBalcony, that.isExistBalcony) &&
+                Objects.equals(isExistKitchen, that.isExistKitchen) &&
+                Objects.equals(isExistDiningRoom, that.isExistDiningRoom) &&
+                Objects.equals(isExistWCRoom, that.isExistWCRoom) &&
+                Objects.equals(isExistAdditionalWCRoom, that.isExistAdditionalWCRoom) &&
+                Objects.equals(countOfMan, that.countOfMan) &&
+                Objects.equals(typeOfMainBed, that.typeOfMainBed) &&
+                Objects.equals(isExistChildBed, that.isExistChildBed);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class TypeRoom implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "TypeRoom{" +
+        return "DefaultTypeRoom{" +
                 "id='" + id + '\'' +
                 ", typeRoomName='" + typeRoomName + '\'' +
                 ", typeRoomWorldName='" + typeRoomWorldName + '\'' +
@@ -276,6 +276,3 @@ public class TypeRoom implements Serializable, Cloneable {
                 '}';
     }
 }
-
-
-

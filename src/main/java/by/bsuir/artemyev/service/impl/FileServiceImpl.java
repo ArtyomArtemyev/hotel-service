@@ -34,6 +34,7 @@ public class FileServiceImpl implements FileService {
             Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
             IdFileName idFileName = new IdFileName(String.valueOf(randomUUID()), file.getOriginalFilename());
             idFileNameRepository.save(idFileName);
+            logger.info(idFileName);
         } catch (Exception e) {
             throw new RuntimeException("Problems with storing file");
         }

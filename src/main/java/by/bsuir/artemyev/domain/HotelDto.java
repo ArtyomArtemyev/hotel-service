@@ -12,13 +12,14 @@ public class HotelDto implements Serializable, Cloneable {
     private Integer countOfStars;
     private String description;
     private String photoName;
-    private List<TypeRoomDto> rooms;
+    private List<TypeRoom> rooms;
+    private List<ServicePrice> servicesPrices;
 
     public HotelDto() {
         super();
     }
 
-    public HotelDto(String id, String name, String city, String address, Integer countOfStars, String description, String photoName, List<TypeRoomDto> rooms) {
+    public HotelDto(String id, String name, String city, String address, Integer countOfStars, String description, String photoName, List<TypeRoom> rooms, List<ServicePrice> servicesPrices) {
         this.id = id;
         this.name = name;
         this.city = city;
@@ -27,6 +28,7 @@ public class HotelDto implements Serializable, Cloneable {
         this.description = description;
         this.photoName = photoName;
         this.rooms = rooms;
+        this.servicesPrices = servicesPrices;
     }
 
     public String getId() {
@@ -85,12 +87,20 @@ public class HotelDto implements Serializable, Cloneable {
         this.photoName = photoName;
     }
 
-    public List<TypeRoomDto> getRooms() {
+    public List<TypeRoom> getRooms() {
         return rooms;
     }
 
-    public void setRooms(List<TypeRoomDto> rooms) {
+    public void setRooms(List<TypeRoom> rooms) {
         this.rooms = rooms;
+    }
+
+    public List<ServicePrice> getServicesPrices() {
+        return servicesPrices;
+    }
+
+    public void setServicesPrices(List<ServicePrice> servicesPrices) {
+        this.servicesPrices = servicesPrices;
     }
 
     @Override
@@ -105,12 +115,13 @@ public class HotelDto implements Serializable, Cloneable {
                 Objects.equals(countOfStars, hotelDto.countOfStars) &&
                 Objects.equals(description, hotelDto.description) &&
                 Objects.equals(photoName, hotelDto.photoName) &&
-                Objects.equals(rooms, hotelDto.rooms);
+                Objects.equals(rooms, hotelDto.rooms) &&
+                Objects.equals(servicesPrices, hotelDto.servicesPrices);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, city, address, countOfStars, description, photoName, rooms);
+        return Objects.hash(id, name, city, address, countOfStars, description, photoName, rooms, servicesPrices);
     }
 
     @Override
@@ -124,6 +135,7 @@ public class HotelDto implements Serializable, Cloneable {
                 ", description='" + description + '\'' +
                 ", photoName='" + photoName + '\'' +
                 ", rooms=" + rooms +
+                ", servicesPrices=" + servicesPrices +
                 '}';
     }
 }

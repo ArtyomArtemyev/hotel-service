@@ -9,4 +9,5 @@ public interface HotelService {
     Hotel addHotel(String hotelInfo);
     List<HotelDto> getHotelsDtos();
     Hotel deleteHotel(String id);
+    Hotel updateHotel(String hotelInfo, String id);
 }

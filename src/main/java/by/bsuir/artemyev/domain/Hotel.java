@@ -18,12 +18,14 @@ public class Hotel implements Serializable, Cloneable {
     private Integer countOfStars;
     private String description;
     private List<String> photosIds;
+    private List<String> typeRoomsIds;
+    private List<String> servicesPrices;
 
     public Hotel() {
         super();
     }
 
-    public Hotel(String id, String name, String city, String address, Integer countOfStars, String description, List<String> photosIds) {
+    public Hotel(String id, String name, String city, String address, Integer countOfStars, String description, List<String> photosIds, List<String> typeRoomsIds, List<String> servicesPrices) {
         this.id = id;
         this.name = name;
         this.city = city;
@@ -31,6 +33,8 @@ public class Hotel implements Serializable, Cloneable {
         this.countOfStars = countOfStars;
         this.description = description;
         this.photosIds = photosIds;
+        this.typeRoomsIds = typeRoomsIds;
+        this.servicesPrices = servicesPrices;
     }
 
     public String getId() {
@@ -89,6 +93,22 @@ public class Hotel implements Serializable, Cloneable {
         this.photosIds = photosIds;
     }
 
+    public List<String> getTypeRoomsIds() {
+        return typeRoomsIds;
+    }
+
+    public void setTypeRoomsIds(List<String> typeRoomsIds) {
+        this.typeRoomsIds = typeRoomsIds;
+    }
+
+    public List<String> getServicesPrices() {
+        return servicesPrices;
+    }
+
+    public void setServicesPrices(List<String> servicesPrices) {
+        this.servicesPrices = servicesPrices;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -100,12 +120,14 @@ public class Hotel implements Serializable, Cloneable {
                 Objects.equals(address, hotel.address) &&
                 Objects.equals(countOfStars, hotel.countOfStars) &&
                 Objects.equals(description, hotel.description) &&
-                Objects.equals(photosIds, hotel.photosIds);
+                Objects.equals(photosIds, hotel.photosIds) &&
+                Objects.equals(typeRoomsIds, hotel.typeRoomsIds) &&
+                Objects.equals(servicesPrices, hotel.servicesPrices);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, city, address, countOfStars, description, photosIds);
+        return Objects.hash(id, name, city, address, countOfStars, description, photosIds, typeRoomsIds, servicesPrices);
     }
 
     @Override
@@ -118,6 +140,8 @@ public class Hotel implements Serializable, Cloneable {
                 ", countOfStars=" + countOfStars +
                 ", description='" + description + '\'' +
                 ", photosIds=" + photosIds +
+                ", typeRoomsIds=" + typeRoomsIds +
+                ", servicesPrices=" + servicesPrices +
                 '}';
     }
 }
