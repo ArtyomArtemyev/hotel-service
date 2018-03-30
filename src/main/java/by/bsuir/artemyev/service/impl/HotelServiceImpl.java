@@ -13,9 +13,15 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.valueOf;
 import static java.util.UUID.randomUUID;
@@ -53,7 +59,11 @@ public class HotelServiceImpl implements HotelService {
     private static final String SERVICES_PRICE = "servicesPrice";
     private static final String SERVICE = "service";
     private static final String PRICE = "price";
-    public static final String SERVICES_PRICES = "servicesPrices";
+    private static final String SERVICES_PRICES = "servicesPrices";
+    private static final String CHILD_BED_IN_ROOM = "childBedInRoom";
+    private static final String FIND_HOTEL_PAGE_COUNT_MEN_DIV = "findHotelPageCountMenDiv";
+
+
 
     @Autowired
     TypeRoomRepository typeRoomRepository;
@@ -116,6 +126,119 @@ public class HotelServiceImpl implements HotelService {
         hotelRepository.save(hotel);
         logger.info("Successfully update hotel with id: " + id);
         return hotel;
+    }
+
+    @Override
+    public List<HotelSuggestion> defineOrderSuggestion(String userRequirementInfo) throws ParseException {
+        JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
+        List<Hotel> hotelsWithNecessaryCity = hotelRepository.findAllByCity(userRequirementJsonObject.getString("findHotelPageCityInput"));
+        List<ServicePrice> servicePrices = servicePriceRepository.findAll();
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+
+        List<HotelSuggestion> hotelSuggestions = new ArrayList<>();
+        for(Hotel hotel: hotelsWithNecessaryCity) {
+
+            List<OrderSuggestion> orderSuggestions = new ArrayList<>();
+            List<TypeRoom> typeRooms = defineRequirementTypeRooms(hotel.getTypeRoomsIds(), userRequirementJsonObject.getBoolean("childBedInRoom"));
+            List<ServicePrice> servicePriceForHotel = defineServicePriceForHotel(servicePrices, hotel.getServicesPrices());
+
+            for(TypeRoom typeRoom: typeRooms) {
+
+                //Определяем сколько таких комнат необходимо
+                int countOfPerson = userRequirementJsonObject.getInt(FIND_HOTEL_PAGE_COUNT_MEN_DIV);
+                int countNeedRoom = 0;
+                if (countOfPerson % typeRoom.getCountOfMan() == 0) {
+                    countNeedRoom = countOfPerson / typeRoom.getCountOfMan();
+                } else {
+                    countNeedRoom = (countOfPerson / typeRoom.getCountOfMan()) + 1;
+                }
+                logger.info(typeRoom.getTypeRoomName() + "----Количество----- " + countNeedRoom);
+
+                //Определяем базовую цену за номер опредленной категории
+                Float baserPriceForRoom = new Float(0);
+                for(ServicePrice servicePrice: servicePriceForHotel) {
+                   if (servicePrice.getRoom()) {
+                       if(servicePrice.getService().equals(typeRoom.getTypeRoomName())) {
+                           baserPriceForRoom = servicePrice.getPrice();
+                       }
+                   }
+                }
+                logger.info(typeRoom.getTypeRoomName() + "----Базовая цена за номер----- " + baserPriceForRoom);
+
+                //Определяем цену за день
+                Float additionalPriceForRoom = defineAdditionalPriceForRoom(typeRoom, servicePriceForHotel, userRequirementJsonObject.getBoolean("childBedInRoom"));
+                logger.info(typeRoom.getTypeRoomName() + "----Цена за доп. услуги----- " + additionalPriceForRoom);
+                Float priceForRoom = baserPriceForRoom + additionalPriceForRoom;
+                logger.info(typeRoom.getTypeRoomName() + "----Цена за день----- " + priceForRoom);
+
+                //Определяем цену за весь период
+                Date startDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateInput"));
+                Date endDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateEndInput"));
+                int days = Math.toIntExact(ChronoUnit.DAYS.between(endDate.toInstant(), startDate.toInstant()));
+                logger.info(typeRoom.getTypeRoomName() + "----Количество дней----- " + days);
+                Float priceForAllDays = priceForRoom * days;
+                logger.info(typeRoom.getTypeRoomName() + "----Цена за весь период----- " + priceForAllDays);
+
+                OrderSuggestion orderSuggestion = new OrderSuggestion();
+                orderSuggestion.setTypeRoom(typeRoom);
+                orderSuggestion.setCountRoom(countNeedRoom);
+                orderSuggestion.setHotel(hotel);
+                orderSuggestion.setPriceForDay(priceForRoom);
+                orderSuggestion.setFullPrice(priceForAllDays);
+                orderSuggestion.setServicePrices(Collections.emptyList());
+
+                orderSuggestions.add(orderSuggestion);
+            }
+            HotelSuggestion hotelSuggestion = new HotelSuggestion(hotel, orderSuggestions);
+            hotelSuggestions.add(hotelSuggestion);
+        }
+
+        return hotelSuggestions;
+    }
+
+    private Float defineAdditionalPriceForRoom(TypeRoom typeRoom, List<ServicePrice> servicePriceForHotel, boolean childBedInRoom) {
+        Float additionalPrice = new Float(0);
+        if(childBedInRoom) {
+          additionalPrice += findPriceByName(servicePriceForHotel, "Детская кровать");
+        }
+        if(typeRoom.getExistBalcony()) {
+            additionalPrice += findPriceByName(servicePriceForHotel, "Балкон");
+        }
+        if(typeRoom.getExistBar()) {
+            additionalPrice += findPriceByName(servicePriceForHotel, "Бар");
+        }
+        if(typeRoom.getExistTV()) {
+            additionalPrice += findPriceByName(servicePriceForHotel,  "Телевизор");
+        }
+        if(typeRoom.getExistWiFi()) {
+            additionalPrice += findPriceByName(servicePriceForHotel, "Wi-fi");
+        }
+        return additionalPrice;
+    }
+
+    Float findPriceByName(List<ServicePrice> servicePrices, String serviceName) {
+        for (ServicePrice servicePrice : servicePrices) {
+            if (servicePrice.getService().equals(serviceName)) {
+                return servicePrice.getPrice();
+            }
+        }
+        return new Float(0);
+    }
+
+    private List<ServicePrice> defineServicePriceForHotel(List<ServicePrice> servicePrices, List<String> servicesPrices) {
+        List<ServicePrice> hotelServicePrices = new ArrayList<>();
+        for(String hotelServicePriceId: servicesPrices) {
+            for (ServicePrice servicePrice : servicePrices) {
+                if(servicePrice.getId().equals(hotelServicePriceId)) {
+                    hotelServicePrices.add(servicePrice);
+                }
+            }
+        }
+        return hotelServicePrices;
+    }
+
+    private List<TypeRoom> defineRequirementTypeRooms(List<String> typeRoomsIds, boolean existChildBen) {
+        return existChildBen ? typeRoomsIds.stream().map(idForFind -> typeRoomRepository.findByIdAndIsExistChildBed(idForFind, existChildBen)).collect(Collectors.toList()) : typeRoomsIds.stream().map(idForFind -> typeRoomRepository.findOne(idForFind)).collect(Collectors.toList());
     }
 
     private List<HotelDto> createHotelsDtos(List<Hotel> hotels, List<TypeRoom> typeRooms, List<ServicePrice> servicePrices, List<IdFileName> idFileNames) {
@@ -209,7 +332,7 @@ public class HotelServiceImpl implements HotelService {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject servicePriceJSONObject = jsonArray.getJSONObject(i);
             String servicePriceId = valueOf(randomUUID());
-            ServicePrice servicePrice = new ServicePrice(servicePriceId, servicePriceJSONObject.getString(SERVICE), new Double(servicePriceJSONObject.getDouble(PRICE)).floatValue());
+            ServicePrice servicePrice = new ServicePrice(servicePriceId, servicePriceJSONObject.getString(SERVICE), new Double(servicePriceJSONObject.getDouble(PRICE)).floatValue(), servicePriceJSONObject.getBoolean("isRoom"));
             servicePriceRepository.save(servicePrice);
             servicesPricesIds.add(servicePriceId);
         }

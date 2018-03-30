@@ -1,5 +1,6 @@
 package by.bsuir.artemyev.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,19 +9,29 @@ import java.util.Objects;
 
 @Document(collection = "services_prices")
 public class ServicePrice implements Serializable, Cloneable {
+
+    @JsonProperty("id")
     @Id
     private String id;
+
+    @JsonProperty("service")
     private String service;
+
+    @JsonProperty("price")
     private Float price;
+
+    @JsonProperty("isRoom")
+    private Boolean isRoom;
 
     public ServicePrice() {
         super();
     }
 
-    public ServicePrice(String id, String service, Float price) {
+    public ServicePrice(String id, String service, Float price, Boolean isRoom) {
         this.id = id;
         this.service = service;
         this.price = price;
+        this.isRoom = isRoom;
     }
 
     public String getId() {
@@ -47,6 +58,14 @@ public class ServicePrice implements Serializable, Cloneable {
         this.price = price;
     }
 
+    public Boolean getRoom() {
+        return isRoom;
+    }
+
+    public void setRoom(Boolean room) {
+        isRoom = room;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -54,12 +73,13 @@ public class ServicePrice implements Serializable, Cloneable {
         ServicePrice that = (ServicePrice) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(service, that.service) &&
-                Objects.equals(price, that.price);
+                Objects.equals(price, that.price) &&
+                Objects.equals(isRoom, that.isRoom);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, service, price);
+        return Objects.hash(id, service, price, isRoom);
     }
 
     @Override
@@ -68,6 +88,7 @@ public class ServicePrice implements Serializable, Cloneable {
                 "id='" + id + '\'' +
                 ", service='" + service + '\'' +
                 ", price=" + price +
+                ", isRoom=" + isRoom +
                 '}';
     }
 }

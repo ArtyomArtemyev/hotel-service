@@ -1,12 +1,9 @@
 package by.bsuir.artemyev.controller;
 
-import by.bsuir.artemyev.domain.DefaultTypeRoom;
-import by.bsuir.artemyev.domain.Hotel;
-import by.bsuir.artemyev.domain.HotelDto;
+import by.bsuir.artemyev.domain.*;
 import by.bsuir.artemyev.repository.DefaultTypeRoomRepository;
 import by.bsuir.artemyev.repository.TypeRoomRepository;
 import by.bsuir.artemyev.service.HotelService;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,9 +61,17 @@ public class HotelController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public List<String> updateHotel(@RequestBody String hotelInfo, @PathVariable("id") String id) {
-        logger.info("Request to update hotel:" + hotelInfo);
+        logger.info("Request to update hotel: " + hotelInfo);
         Hotel hotel = hotelService.updateHotel(hotelInfo, id);
         return hotel == null ? Collections.emptyList() : Collections.singletonList(hotel.getId());
+    }
+
+    @RequestMapping(value = "/find-hotel", method = RequestMethod.POST)
+    public List<?> findHotel(@RequestBody String userRequirementInfo) throws ParseException {
+        logger.info("Request to find hotel, room by this requirement" + userRequirementInfo);
+        List<HotelSuggestion> orderSuggestions = hotelService.defineOrderSuggestion(userRequirementInfo);
+        return orderSuggestions == null ? Collections.emptyList() : orderSuggestions;
+
     }
 
 }
