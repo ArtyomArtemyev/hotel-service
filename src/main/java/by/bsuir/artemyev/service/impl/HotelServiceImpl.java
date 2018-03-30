@@ -64,7 +64,6 @@ public class HotelServiceImpl implements HotelService {
     private static final String FIND_HOTEL_PAGE_COUNT_MEN_DIV = "findHotelPageCountMenDiv";
 
 
-
     @Autowired
     TypeRoomRepository typeRoomRepository;
 
@@ -136,13 +135,13 @@ public class HotelServiceImpl implements HotelService {
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         List<HotelSuggestion> hotelSuggestions = new ArrayList<>();
-        for(Hotel hotel: hotelsWithNecessaryCity) {
+        for (Hotel hotel : hotelsWithNecessaryCity) {
 
             List<OrderSuggestion> orderSuggestions = new ArrayList<>();
             List<TypeRoom> typeRooms = defineRequirementTypeRooms(hotel.getTypeRoomsIds(), userRequirementJsonObject.getBoolean("childBedInRoom"));
             List<ServicePrice> servicePriceForHotel = defineServicePriceForHotel(servicePrices, hotel.getServicesPrices());
 
-            for(TypeRoom typeRoom: typeRooms) {
+            for (TypeRoom typeRoom : typeRooms) {
 
                 //Определяем сколько таких комнат необходимо
                 int countOfPerson = userRequirementJsonObject.getInt(FIND_HOTEL_PAGE_COUNT_MEN_DIV);
@@ -156,12 +155,12 @@ public class HotelServiceImpl implements HotelService {
 
                 //Определяем базовую цену за номер опредленной категории
                 Float baserPriceForRoom = new Float(0);
-                for(ServicePrice servicePrice: servicePriceForHotel) {
-                   if (servicePrice.getRoom()) {
-                       if(servicePrice.getService().equals(typeRoom.getTypeRoomName())) {
-                           baserPriceForRoom = servicePrice.getPrice();
-                       }
-                   }
+                for (ServicePrice servicePrice : servicePriceForHotel) {
+                    if (servicePrice.getRoom()) {
+                        if (servicePrice.getService().equals(typeRoom.getTypeRoomName())) {
+                            baserPriceForRoom = servicePrice.getPrice();
+                        }
+                    }
                 }
                 logger.info(typeRoom.getTypeRoomName() + "----Базовая цена за номер----- " + baserPriceForRoom);
 
@@ -185,6 +184,7 @@ public class HotelServiceImpl implements HotelService {
                 orderSuggestion.setHotel(hotel);
                 orderSuggestion.setPriceForDay(priceForRoom);
                 orderSuggestion.setFullPrice(priceForAllDays);
+                orderSuggestion.setPriceForRoom(baserPriceForRoom);
                 orderSuggestion.setServicePrices(Collections.emptyList());
 
                 orderSuggestions.add(orderSuggestion);
@@ -198,19 +198,19 @@ public class HotelServiceImpl implements HotelService {
 
     private Float defineAdditionalPriceForRoom(TypeRoom typeRoom, List<ServicePrice> servicePriceForHotel, boolean childBedInRoom) {
         Float additionalPrice = new Float(0);
-        if(childBedInRoom) {
-          additionalPrice += findPriceByName(servicePriceForHotel, "Детская кровать");
+        if (childBedInRoom) {
+            additionalPrice += findPriceByName(servicePriceForHotel, "Детская кровать");
         }
-        if(typeRoom.getExistBalcony()) {
+        if (typeRoom.getExistBalcony()) {
             additionalPrice += findPriceByName(servicePriceForHotel, "Балкон");
         }
-        if(typeRoom.getExistBar()) {
+        if (typeRoom.getExistBar()) {
             additionalPrice += findPriceByName(servicePriceForHotel, "Бар");
         }
-        if(typeRoom.getExistTV()) {
-            additionalPrice += findPriceByName(servicePriceForHotel,  "Телевизор");
+        if (typeRoom.getExistTV()) {
+            additionalPrice += findPriceByName(servicePriceForHotel, "Телевизор");
         }
-        if(typeRoom.getExistWiFi()) {
+        if (typeRoom.getExistWiFi()) {
             additionalPrice += findPriceByName(servicePriceForHotel, "Wi-fi");
         }
         return additionalPrice;
@@ -227,9 +227,9 @@ public class HotelServiceImpl implements HotelService {
 
     private List<ServicePrice> defineServicePriceForHotel(List<ServicePrice> servicePrices, List<String> servicesPrices) {
         List<ServicePrice> hotelServicePrices = new ArrayList<>();
-        for(String hotelServicePriceId: servicesPrices) {
+        for (String hotelServicePriceId : servicesPrices) {
             for (ServicePrice servicePrice : servicePrices) {
-                if(servicePrice.getId().equals(hotelServicePriceId)) {
+                if (servicePrice.getId().equals(hotelServicePriceId)) {
                     hotelServicePrices.add(servicePrice);
                 }
             }

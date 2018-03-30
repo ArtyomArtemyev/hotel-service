@@ -67,11 +67,10 @@ public class HotelController {
     }
 
     @RequestMapping(value = "/find-hotel", method = RequestMethod.POST)
-    public List<?> findHotel(@RequestBody String userRequirementInfo) throws ParseException {
+    public List<HotelSuggestion> findHotel(@RequestBody String userRequirementInfo) throws ParseException {
         logger.info("Request to find hotel, room by this requirement" + userRequirementInfo);
         List<HotelSuggestion> orderSuggestions = hotelService.defineOrderSuggestion(userRequirementInfo);
         return orderSuggestions == null ? Collections.emptyList() : orderSuggestions;
-
     }
 
 }
