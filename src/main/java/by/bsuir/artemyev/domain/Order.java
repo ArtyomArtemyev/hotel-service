@@ -1,5 +1,6 @@
 package by.bsuir.artemyev.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -18,13 +19,16 @@ public class Order implements Serializable, Cloneable {
     private Date endDate;
     private Integer countOfMan;
     private OrderSuggestion orderSuggestion;
+
+    @JsonProperty("user")
     private InternalUserDto internalUser;
+    private String status;
 
     public Order() {
         super();
     }
 
-    public Order(String id, Hotel hotel, String city, Date startDate, Date endDate, Integer countOfMan, OrderSuggestion orderSuggestion, InternalUserDto internalUser) {
+    public Order(String id, Hotel hotel, String city, Date startDate, Date endDate, Integer countOfMan, OrderSuggestion orderSuggestion, InternalUserDto internalUser, String status) {
         this.id = id;
         this.hotel = hotel;
         this.city = city;
@@ -33,6 +37,7 @@ public class Order implements Serializable, Cloneable {
         this.countOfMan = countOfMan;
         this.orderSuggestion = orderSuggestion;
         this.internalUser = internalUser;
+        this.status = status;
     }
 
     public String getId() {
@@ -99,6 +104,14 @@ public class Order implements Serializable, Cloneable {
         this.internalUser = internalUser;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -111,12 +124,13 @@ public class Order implements Serializable, Cloneable {
                 Objects.equals(endDate, order.endDate) &&
                 Objects.equals(countOfMan, order.countOfMan) &&
                 Objects.equals(orderSuggestion, order.orderSuggestion) &&
-                Objects.equals(internalUser, order.internalUser);
+                Objects.equals(internalUser, order.internalUser) &&
+                Objects.equals(status, order.status);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, hotel, city, startDate, endDate, countOfMan, orderSuggestion, internalUser);
+        return Objects.hash(id, hotel, city, startDate, endDate, countOfMan, orderSuggestion, internalUser, status);
     }
 
     @Override
@@ -130,6 +144,7 @@ public class Order implements Serializable, Cloneable {
                 ", countOfMan=" + countOfMan +
                 ", orderSuggestion=" + orderSuggestion +
                 ", internalUser=" + internalUser +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

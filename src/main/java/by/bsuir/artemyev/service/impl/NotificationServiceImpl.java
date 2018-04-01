@@ -33,9 +33,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     private String createMessage(InternalUserDto user, Order order) {
         logger.info("Create notify message about booking room");
-        return "Уважаемый пользователь, " + user.getName() + ", Вы осуществили пронирование номера в отеле"
+        return "Уважаемый пользователь, " + user.getName() + ", Вы осуществили бронирование номера в отеле"
                 + order.getHotel().getName() + ", находящегося по адресу: " + order.getHotel().getAddress()
                 + "в период с " + order.getStartDate() +  "по " + order.getEndDate() + "c общей стоимостью: "
-                + order.getOrderSuggestion().getFullPrice() + ". Если, Вы, не осуществляли операцию бронирования, пожалуйста ответь нам на сообщение - сообщением: Не бронировал ";
+                + order.getOrderSuggestion().getFullPrice() + ". Ваша заявка принята и находится в обработке. Пожалуйста, следите " +
+                " за её статустом в разделе: Мои заказы. "+ "Если, Вы, не осуществляли операцию бронирования, пожалуйста ответь нам на сообщение - сообщением: Не бронировал ";
     }
 }

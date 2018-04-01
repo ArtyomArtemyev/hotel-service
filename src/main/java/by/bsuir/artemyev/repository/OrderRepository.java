@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findAllByInternalUser(InternalUserDto internalUserDto);
+    List<Order> findAllByStatus(String status);
 }

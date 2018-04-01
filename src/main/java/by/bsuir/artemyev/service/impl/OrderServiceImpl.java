@@ -24,7 +24,6 @@ import static java.util.UUID.randomUUID;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-
     private static Logger logger = LogManager.getLogger(OrderServiceImpl.class);
 
     private static final String TOKEN = "token";
@@ -41,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private static final String FULL_PRICE = "fullPrice";
     private static final String COUNT_ROOM = "countRoom";
     private static final String ORDER_SUGGESTION = "orderSuggestion";
+    private static final String STATUS = "status";
 
 
     @Autowired
@@ -64,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
         JSONObject orderInfoJSONObject = new JSONObject(orderInfo);
         InternalUserDto internalUserDto = securityServiceClient.getUserByTokenContent(orderInfoJSONObject.getJSONObject(TOKEN).getString(ACCESS_TOKEN));
         Order order = new Order();
+        order.setStatus(orderInfoJSONObject.getString(STATUS));
         order.setCountOfMan(orderInfoJSONObject.getInt(COUNT_OF_MAN));
         order.setCity(orderInfoJSONObject.getString(CITY));
         order.setInternalUser(internalUserDto);
@@ -97,6 +98,18 @@ public class OrderServiceImpl implements OrderService {
         return userOrders == null ? Collections.emptyList() : userOrders;
     }
 
+    @Override
+    public List<Order> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.size() == 0 ? Collections.emptyList() : orders;
+    }
+
+    @Override
+    public List<Order> getAllUnprocessedOrders() {
+        List<Order> unprocessedOrder = orderRepository.findAllByStatus("В ожидании обработки");
+        return unprocessedOrder.size() == 0 ? Collections.emptyList() : unprocessedOrder;
+    }
+
     private TypeRoom defineTypeRoom(String id) {
         return typeRoomRepository.findOne(id);
     }
@@ -109,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         Date parseDate = null;
         try {
-            parseDate =  formatter.parse(stringDate);
+            parseDate = formatter.parse(stringDate);
         } catch (ParseException e) {
             logger.error("Can not parse date: " + stringDate);
             e.printStackTrace();

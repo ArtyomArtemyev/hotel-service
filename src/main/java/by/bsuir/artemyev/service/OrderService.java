@@ -7,4 +7,6 @@ import java.util.List;
 public interface OrderService {
     Order createOrder(String orderInfo);
     List<Order> getUserOrders(String userInfo);
+    List<Order> getAllOrders();
+    List<Order> getAllUnprocessedOrders();
 }

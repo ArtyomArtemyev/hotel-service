@@ -28,4 +28,16 @@ public class OrderController {
         logger.info("Request to get orders for user with user info:" + userInfo);
         return orderService.getUserOrders(userInfo);
     }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public List<Order> getAllOrders() {
+        logger.info("Request to get all orders");
+        return orderService.getAllOrders();
+    }
+
+    @RequestMapping(value = "/unprocessed", method = RequestMethod.GET)
+    public List<Order> getAllUnprocessedOrders() {
+        logger.info("Request to get all unprocessed orders");
+        return orderService.getAllUnprocessedOrders();
+    }
 }
