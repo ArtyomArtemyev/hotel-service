@@ -1,5 +1,6 @@
 package by.bsuir.artemyev.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,7 +16,9 @@ public class Order implements Serializable, Cloneable {
     private String id;
     private Hotel hotel;
     private String city;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date endDate;
     private Integer countOfMan;
     private OrderSuggestion orderSuggestion;
