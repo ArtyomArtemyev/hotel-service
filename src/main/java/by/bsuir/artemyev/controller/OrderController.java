@@ -26,7 +26,10 @@ public class OrderController {
     @RequestMapping(value = "/user", method = RequestMethod.POST)
     public List<Order> getOrdersForUser(@RequestBody String userInfo) {
         logger.info("Request to get orders for user with user info:" + userInfo);
-        return orderService.getUserOrders(userInfo);
+
+        List<Order> orders = orderService.getUserOrders(userInfo);
+        logger.info(orders);
+        return orders;
     }
 
     @RequestMapping(method = RequestMethod.GET)

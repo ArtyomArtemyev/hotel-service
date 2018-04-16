@@ -1,7 +1,9 @@
 package by.bsuir.artemyev.domain;
 
+import by.bsuir.artemyev.configuration.JsonDateSerializer;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,9 +18,7 @@ public class Order implements Serializable, Cloneable {
     private String id;
     private Hotel hotel;
     private String city;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date startDate;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date endDate;
     private Integer countOfMan;
     private OrderSuggestion orderSuggestion;
@@ -67,6 +67,7 @@ public class Order implements Serializable, Cloneable {
         this.city = city;
     }
 
+    @JsonSerialize(using=JsonDateSerializer.class)
     public Date getStartDate() {
         return startDate;
     }
@@ -75,6 +76,7 @@ public class Order implements Serializable, Cloneable {
         this.startDate = startDate;
     }
 
+    @JsonSerialize(using=JsonDateSerializer.class)
     public Date getEndDate() {
         return endDate;
     }
