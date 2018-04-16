@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.print.DocFlavor;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,6 +89,38 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         notificationService.notifyUserAboutCreatingOrder(internalUserDto, order);
         return orderRepository.findOne(orderId);
+    }
+
+    @Override
+    public Order updateOrder(String orderInfo, String id) {
+        JSONObject orderInfoJSONObject = new JSONObject(orderInfo);
+        InternalUserDto internalUserDto = securityServiceClient.getUserByTokenContent(orderInfoJSONObject.getJSONObject(TOKEN).getString(ACCESS_TOKEN));
+        Order order = new Order();
+        order.setStatus(orderInfoJSONObject.getString(STATUS));
+        order.setCountOfMan(orderInfoJSONObject.getInt(COUNT_OF_MAN));
+        order.setCity(orderInfoJSONObject.getString(CITY));
+        order.setInternalUser(internalUserDto);
+        Date startDate = parseAndCreateDate(orderInfoJSONObject.getString(START_DATE));
+        order.setStartDate(startDate);
+        Date endDate = parseAndCreateDate(orderInfoJSONObject.getString(END_DATE));
+        order.setEndDate(endDate);
+        Hotel hotel = defineHotel(orderInfoJSONObject.getJSONObject(HOTEL).getString(ID));
+        order.setHotel(hotel);
+        OrderSuggestion orderSuggestion = new OrderSuggestion();
+        orderSuggestion.setHotel(hotel);
+        TypeRoom typeRoom = defineTypeRoom(orderInfoJSONObject.getJSONObject(ORDER_SUGGESTION).getJSONObject(TYPE_ROOM).getString(ID));
+        orderSuggestion.setTypeRoom(typeRoom);
+        orderSuggestion.setPriceForRoom((float) orderInfoJSONObject.getJSONObject(ORDER_SUGGESTION).getDouble(PRICE_FOR_ROOM));
+        orderSuggestion.setPriceForDay((float) orderInfoJSONObject.getJSONObject(ORDER_SUGGESTION).getDouble(PRICE_FOR_DAY));
+        orderSuggestion.setFullPrice((float) orderInfoJSONObject.getJSONObject(ORDER_SUGGESTION).getDouble(FULL_PRICE));
+        orderSuggestion.setCountRoom(orderInfoJSONObject.getJSONObject(ORDER_SUGGESTION).getInt(COUNT_ROOM));
+        orderSuggestion.setServicePrices(Collections.emptyList());
+        order.setOrderSuggestion(orderSuggestion);
+        order.setId(id);
+        orderRepository.delete(id);
+        orderRepository.save(order);
+//        notificationService.notifyUserAboutCreatingOrder(internalUserDto, order);
+        return orderRepository.findOne(id);
     }
 
     @Override
