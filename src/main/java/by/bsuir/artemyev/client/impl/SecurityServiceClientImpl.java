@@ -4,7 +4,6 @@ import by.bsuir.artemyev.client.SecurityServiceClient;
 import by.bsuir.artemyev.domain.InternalUserDto;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
