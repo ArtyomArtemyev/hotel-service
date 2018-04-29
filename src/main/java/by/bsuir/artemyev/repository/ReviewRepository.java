@@ -1,11 +1,11 @@
 package by.bsuir.artemyev.repository;
 
 import by.bsuir.artemyev.domain.Hotel;
+import by.bsuir.artemyev.domain.Review;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface HotelRepository extends MongoRepository<Hotel, String> {
-    List<Hotel> findAllByCity(String city);
-    List<Hotel> findAllByName(String name);
+public interface ReviewRepository extends MongoRepository<Review, String> {
+    List<Review> findAllByHotel(Hotel hotel);
 }

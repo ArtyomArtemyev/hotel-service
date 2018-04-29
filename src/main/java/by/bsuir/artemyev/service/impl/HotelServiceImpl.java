@@ -1,10 +1,8 @@
 package by.bsuir.artemyev.service.impl;
 
+import by.bsuir.artemyev.client.SecurityServiceClient;
 import by.bsuir.artemyev.domain.*;
-import by.bsuir.artemyev.repository.HotelRepository;
-import by.bsuir.artemyev.repository.IdFileNameRepository;
-import by.bsuir.artemyev.repository.ServicePriceRepository;
-import by.bsuir.artemyev.repository.TypeRoomRepository;
+import by.bsuir.artemyev.repository.*;
 import by.bsuir.artemyev.service.HotelService;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -63,7 +61,6 @@ public class HotelServiceImpl implements HotelService {
     private static final String CHILD_BED_IN_ROOM = "childBedInRoom";
     private static final String FIND_HOTEL_PAGE_COUNT_MEN_DIV = "findHotelPageCountMenDiv";
 
-
     @Autowired
     TypeRoomRepository typeRoomRepository;
 
@@ -75,6 +72,12 @@ public class HotelServiceImpl implements HotelService {
 
     @Autowired
     ServicePriceRepository servicePriceRepository;
+
+    @Autowired
+    private SecurityServiceClient securityServiceClient;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Override
     public Hotel addHotel(String hotelInfo) {
@@ -194,6 +197,49 @@ public class HotelServiceImpl implements HotelService {
         }
 
         return hotelSuggestions;
+    }
+
+    @Override
+    public List<Hotel> findHotelByName(String userRequirementInfo) {
+        JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
+        return hotelRepository.findAllByName(userRequirementJsonObject.getString("valueForFind"));
+    }
+
+    @Override
+    public List<Hotel> findHotelByCity(String userRequirementInfo) {
+        JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
+        return hotelRepository.findAllByCity(userRequirementJsonObject.getString("valueForFind"));
+    }
+
+    @Override
+    public Review addReview(String reviewInfo) {
+        JSONObject reviewInfoJsonObject = new JSONObject(reviewInfo);
+        InternalUserDto userDto = securityServiceClient.getUserByTokenContent(reviewInfoJsonObject.getJSONObject("token").getString("accessToken"));
+        Hotel hotel = hotelRepository.findOne(reviewInfoJsonObject.getJSONObject("hotel").getString("id"));
+        Date date = parseAndCreateDate(reviewInfoJsonObject.getString("date"));
+        Review review = new Review();
+        String reviewId = String.valueOf(randomUUID());
+        review.setComment(reviewInfoJsonObject.getString("review"));
+        review.setDate(date);
+        review.setHotel(hotel);
+        review.setUserDto(userDto);
+        review.setId(reviewId);
+        reviewRepository.save(review);
+        return reviewRepository.findOne(reviewId);
+    }
+
+    @Override
+    public List<ReviewDto> getReviews() {
+        List<Hotel> hotels = hotelRepository.findAll();
+        List<ReviewDto> reviewDtos = new ArrayList<>();
+        for (Hotel hotel: hotels) {
+            ReviewDto reviewDto = new ReviewDto();
+            reviewDto.setHotel(hotel);
+            List<Review> reviews = reviewRepository.findAllByHotel(hotel);
+            reviewDto.setReviews(reviews);
+            reviewDtos.add(reviewDto);
+        }
+        return reviewDtos;
     }
 
     private Float defineAdditionalPriceForRoom(TypeRoom typeRoom, List<ServicePrice> servicePriceForHotel, boolean childBedInRoom) {
@@ -338,5 +384,17 @@ public class HotelServiceImpl implements HotelService {
         }
         logger.info("Successfully added prices: ");
         return servicesPricesIds;
+    }
+
+    private Date parseAndCreateDate(String stringDate) {
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date parseDate = null;
+        try {
+            parseDate = formatter.parse(stringDate);
+        } catch (ParseException e) {
+            logger.error("Can not parse date: " + stringDate);
+            e.printStackTrace();
+        }
+        return parseDate;
     }
 }

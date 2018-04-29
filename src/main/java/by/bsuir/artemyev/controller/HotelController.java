@@ -73,4 +73,18 @@ public class HotelController {
         return orderSuggestions == null ? Collections.emptyList() : orderSuggestions;
     }
 
+    @RequestMapping(value = "/find-hotel/by-name", method = RequestMethod.POST)
+    public List<Hotel> findHotelByName(@RequestBody String userRequirementInfo) {
+        logger.info("Request to find hotel by name" + userRequirementInfo);
+        List<Hotel> hotelDtos = hotelService.findHotelByName(userRequirementInfo);
+        return hotelDtos == null ? Collections.emptyList() : hotelDtos;
+    }
+
+    @RequestMapping(value = "/find-hotel/by-location", method = RequestMethod.POST)
+    public List<Hotel> findHotelByCity(@RequestBody String userRequirementInfo) {
+        logger.info("Request to find hotel by city" + userRequirementInfo);
+        List<Hotel> hotelDtos = hotelService.findHotelByCity(userRequirementInfo);
+        return hotelDtos == null ? Collections.emptyList() : hotelDtos;
+    }
+
 }
