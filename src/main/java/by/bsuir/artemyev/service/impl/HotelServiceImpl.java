@@ -242,6 +242,12 @@ public class HotelServiceImpl implements HotelService {
         return reviewDtos;
     }
 
+    @Override
+    public Review deleteReview(String id) {
+        reviewRepository.delete(id);
+        return reviewRepository.findOne(id);
+    }
+
     private Float defineAdditionalPriceForRoom(TypeRoom typeRoom, List<ServicePrice> servicePriceForHotel, boolean childBedInRoom) {
         Float additionalPrice = new Float(0);
         if (childBedInRoom) {

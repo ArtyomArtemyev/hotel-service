@@ -8,10 +8,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +17,9 @@ import java.util.List;
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
     private static Logger logger = LogManager.getLogger(ReviewController.class);
+
+    private static final String SUCCESSFUL_RESPONSE = "successful";
+    private static final String UN_SUCCESSFUL_RESPONSE = "unsuccessful";
 
     @Autowired
     HotelService hotelService;
@@ -35,5 +35,11 @@ public class ReviewController {
         logger.info("Request to get all reviews");
         List<ReviewDto> reviews = hotelService.getReviews();
         return reviews == null ? Collections.emptyList() : reviews;
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteReview(@PathVariable("id") String id) {
+        logger.info("Request to delete review");
+        return hotelService.deleteReview(id) == null ? new ResponseEntity<>(SUCCESSFUL_RESPONSE, HttpStatus.OK) : new ResponseEntity<>(UN_SUCCESSFUL_RESPONSE, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,5 +1,6 @@
 package by.bsuir.artemyev.controller;
 
+import by.bsuir.artemyev.repository.IdFileNameRepository;
 import by.bsuir.artemyev.service.impl.FileServiceImpl;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -18,6 +19,9 @@ public class FileController {
     @Autowired
     FileServiceImpl fileServiceImpl;
 
+    @Autowired
+    IdFileNameRepository idFileNameRepository;
+
     @RequestMapping(method = RequestMethod.POST)
     public void handleFileUpload(@RequestParam("file") MultipartFile file) {
         logger.info("Request to upload file");
@@ -33,6 +37,15 @@ public class FileController {
     public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         logger.info("Request to get file with name: " + filename);
         Resource file = fileServiceImpl.loadFile(filename);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+                .body(file);
+    }
+
+    @RequestMapping(value = "/id/{fileId}", method = RequestMethod.GET)
+    public ResponseEntity<Resource> getFileById(@PathVariable String fileId) {
+        logger.info("Request to get file with id: " + fileId);
+        Resource file = fileServiceImpl.loadFile(idFileNameRepository.findOne(fileId).getFileName());
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
                 .body(file);
