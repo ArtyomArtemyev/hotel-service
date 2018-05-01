@@ -119,7 +119,9 @@ public class OrderServiceImpl implements OrderService {
         order.setId(id);
         orderRepository.delete(id);
         orderRepository.save(order);
-//        notificationService.notifyUserAboutCreatingOrder(internalUserDto, order);
+        if(orderInfoJSONObject.getString(STATUS).equals("Обработана")) {
+            notificationService.notifyUserAboutDoneOrder(internalUserDto, order);
+        }
         return orderRepository.findOne(id);
     }
 
