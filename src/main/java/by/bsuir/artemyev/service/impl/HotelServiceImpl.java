@@ -248,6 +248,13 @@ public class HotelServiceImpl implements HotelService {
         return reviewRepository.findOne(id);
     }
 
+    @Override
+    public List<Review> getUserReviews(String tokenInfo) {
+        JSONObject reviewInfoJsonObject = new JSONObject(tokenInfo);
+        InternalUserDto userDto = securityServiceClient.getUserByTokenContent(reviewInfoJsonObject.getString("accessToken"));
+        return reviewRepository.findAllByUserDto(userDto);
+    }
+
     private Float defineAdditionalPriceForRoom(TypeRoom typeRoom, List<ServicePrice> servicePriceForHotel, boolean childBedInRoom) {
         Float additionalPrice = new Float(0);
         if (childBedInRoom) {

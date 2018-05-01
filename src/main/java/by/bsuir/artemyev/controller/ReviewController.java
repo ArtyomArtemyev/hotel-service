@@ -1,17 +1,18 @@
 package by.bsuir.artemyev.controller;
 
-import by.bsuir.artemyev.domain.Review;
-import by.bsuir.artemyev.domain.ReviewDto;
-import by.bsuir.artemyev.service.HotelService;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+        import by.bsuir.artemyev.domain.Review;
+        import by.bsuir.artemyev.domain.ReviewDto;
+        import by.bsuir.artemyev.service.HotelService;
+        import org.apache.log4j.LogManager;
+        import org.apache.log4j.Logger;
+        import org.springframework.beans.factory.annotation.Autowired;
+        import org.springframework.http.HttpStatus;
+        import org.springframework.http.ResponseEntity;
+        import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
+        import java.util.Arrays;
+        import java.util.Collections;
+        import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reviews")
@@ -42,4 +43,12 @@ public class ReviewController {
         logger.info("Request to delete review");
         return hotelService.deleteReview(id) == null ? new ResponseEntity<>(SUCCESSFUL_RESPONSE, HttpStatus.OK) : new ResponseEntity<>(UN_SUCCESSFUL_RESPONSE, HttpStatus.BAD_REQUEST);
     }
+
+    @RequestMapping(value = "/by-user", method = RequestMethod.POST)
+    public List<Review> getUserReview(@RequestBody String tokenInfo) {
+        logger.info("Request to get reviews by user with token: " + tokenInfo);
+        List<Review> reviewDtos = hotelService.getUserReviews(tokenInfo);
+        return reviewDtos == null ? Collections.emptyList() : reviewDtos;
+    }
+
 }

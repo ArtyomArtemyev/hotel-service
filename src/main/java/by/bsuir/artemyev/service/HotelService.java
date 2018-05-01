@@ -1,7 +1,6 @@
 package by.bsuir.artemyev.service;
 
 import by.bsuir.artemyev.domain.*;
-import org.springframework.http.ResponseEntity;
 
 import java.text.ParseException;
 import java.util.List;
@@ -26,4 +25,6 @@ public interface HotelService {
     List<ReviewDto> getReviews();
 
     Review deleteReview(String id);
+
+    List<Review> getUserReviews(String tokenInfo);
 }
