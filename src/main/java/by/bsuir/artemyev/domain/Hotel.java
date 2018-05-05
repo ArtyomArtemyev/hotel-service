@@ -1,5 +1,6 @@
 package by.bsuir.artemyev.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -20,6 +21,7 @@ public class Hotel implements Serializable, Cloneable {
     private List<String> photosIds;
     private List<String> typeRoomsIds;
     private List<String> servicesPrices;
+    private String entityState = "Normal";
 
     public Hotel() {
         super();
@@ -109,6 +111,14 @@ public class Hotel implements Serializable, Cloneable {
         this.servicesPrices = servicesPrices;
     }
 
+    public String getEntityState() {
+        return entityState;
+    }
+
+    public void setEntityState(String entityState) {
+        this.entityState = entityState;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -122,12 +132,13 @@ public class Hotel implements Serializable, Cloneable {
                 Objects.equals(description, hotel.description) &&
                 Objects.equals(photosIds, hotel.photosIds) &&
                 Objects.equals(typeRoomsIds, hotel.typeRoomsIds) &&
-                Objects.equals(servicesPrices, hotel.servicesPrices);
+                Objects.equals(servicesPrices, hotel.servicesPrices) &&
+                Objects.equals(entityState, hotel.entityState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, city, address, countOfStars, description, photosIds, typeRoomsIds, servicesPrices);
+        return Objects.hash(id, name, city, address, countOfStars, description, photosIds, typeRoomsIds, servicesPrices, entityState);
     }
 
     @Override
@@ -142,6 +153,7 @@ public class Hotel implements Serializable, Cloneable {
                 ", photosIds=" + photosIds +
                 ", typeRoomsIds=" + typeRoomsIds +
                 ", servicesPrices=" + servicesPrices +
+                ", entityState='" + entityState + '\'' +
                 '}';
     }
 }

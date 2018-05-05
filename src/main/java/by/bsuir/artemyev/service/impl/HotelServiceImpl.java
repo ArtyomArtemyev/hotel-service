@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;
@@ -79,6 +80,9 @@ public class HotelServiceImpl implements HotelService {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private HotelRepositoryExtended hotelRepositoryExtended;
+
     @Override
     public Hotel addHotel(String hotelInfo) {
         JSONObject jsonObjectByHotelInfo = new JSONObject(hotelInfo);
@@ -101,11 +105,10 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public Hotel deleteHotel(String hotelId) {
-        Hotel hotel = hotelRepository.findOne(hotelId);
-        hotelRepository.delete(hotel);
+        hotelRepositoryExtended.deleteHotel(hotelId);
         logger.info("Successfully deleted hotel with id: " + hotelId);
-        //TODO: bulk delete rooms. services, photoName
-        return hotelRepository.findOne(hotelId);
+        Hotel hotel = hotelRepository.findOne(hotelId);
+        return hotel.getEntityState().equals("DELETED") ? null : hotel;
     }
 
     @Override
@@ -133,67 +136,68 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public List<HotelSuggestion> defineOrderSuggestion(String userRequirementInfo) throws ParseException {
         JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
-        List<Hotel> hotelsWithNecessaryCity = hotelRepository.findAllByCity(userRequirementJsonObject.getString("findHotelPageCityInput"));
+        List<Hotel> hotelsWithNecessaryCity = hotelRepository.findAllByCityAndEntityState(userRequirementJsonObject.getString("findHotelPageCityInput"), "Normal");
         List<ServicePrice> servicePrices = servicePriceRepository.findAll();
         DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
         List<HotelSuggestion> hotelSuggestions = new ArrayList<>();
         for (Hotel hotel : hotelsWithNecessaryCity) {
+            if(hotel.getEntityState().equals("Normal")) {
+                List<OrderSuggestion> orderSuggestions = new ArrayList<>();
+                List<TypeRoom> typeRooms = defineRequirementTypeRooms(hotel.getTypeRoomsIds(), userRequirementJsonObject.getBoolean("childBedInRoom"));
+                List<ServicePrice> servicePriceForHotel = defineServicePriceForHotel(servicePrices, hotel.getServicesPrices());
 
-            List<OrderSuggestion> orderSuggestions = new ArrayList<>();
-            List<TypeRoom> typeRooms = defineRequirementTypeRooms(hotel.getTypeRoomsIds(), userRequirementJsonObject.getBoolean("childBedInRoom"));
-            List<ServicePrice> servicePriceForHotel = defineServicePriceForHotel(servicePrices, hotel.getServicesPrices());
+                for (TypeRoom typeRoom : typeRooms) {
 
-            for (TypeRoom typeRoom : typeRooms) {
+                    //Определяем сколько таких комнат необходимо
+                    int countOfPerson = userRequirementJsonObject.getInt(FIND_HOTEL_PAGE_COUNT_MEN_DIV);
+                    int countNeedRoom = 0;
+                    if (countOfPerson % typeRoom.getCountOfMan() == 0) {
+                        countNeedRoom = countOfPerson / typeRoom.getCountOfMan();
+                    } else {
+                        countNeedRoom = (countOfPerson / typeRoom.getCountOfMan()) + 1;
+                    }
+                    logger.info(typeRoom.getTypeRoomName() + "----Количество----- " + countNeedRoom);
 
-                //Определяем сколько таких комнат необходимо
-                int countOfPerson = userRequirementJsonObject.getInt(FIND_HOTEL_PAGE_COUNT_MEN_DIV);
-                int countNeedRoom = 0;
-                if (countOfPerson % typeRoom.getCountOfMan() == 0) {
-                    countNeedRoom = countOfPerson / typeRoom.getCountOfMan();
-                } else {
-                    countNeedRoom = (countOfPerson / typeRoom.getCountOfMan()) + 1;
-                }
-                logger.info(typeRoom.getTypeRoomName() + "----Количество----- " + countNeedRoom);
-
-                //Определяем базовую цену за номер опредленной категории
-                Float baserPriceForRoom = new Float(0);
-                for (ServicePrice servicePrice : servicePriceForHotel) {
-                    if (servicePrice.getRoom()) {
-                        if (servicePrice.getService().equals(typeRoom.getTypeRoomName())) {
-                            baserPriceForRoom = servicePrice.getPrice();
+                    //Определяем базовую цену за номер опредленной категории
+                    Float baserPriceForRoom = new Float(0);
+                    for (ServicePrice servicePrice : servicePriceForHotel) {
+                        if (servicePrice.getRoom()) {
+                            if (servicePrice.getService().equals(typeRoom.getTypeRoomName())) {
+                                baserPriceForRoom = servicePrice.getPrice();
+                            }
                         }
                     }
+                    logger.info(typeRoom.getTypeRoomName() + "----Базовая цена за номер----- " + baserPriceForRoom);
+
+                    //Определяем цену за день
+                    Float additionalPriceForRoom = defineAdditionalPriceForRoom(typeRoom, servicePriceForHotel, userRequirementJsonObject.getBoolean("childBedInRoom"));
+                    logger.info(typeRoom.getTypeRoomName() + "----Цена за доп. услуги----- " + additionalPriceForRoom);
+                    Float priceForRoom = baserPriceForRoom + additionalPriceForRoom;
+                    logger.info(typeRoom.getTypeRoomName() + "----Цена за день----- " + priceForRoom);
+
+                    //Определяем цену за весь период
+                    Date startDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateInput"));
+                    Date endDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateEndInput"));
+                    int days = Math.toIntExact(ChronoUnit.DAYS.between(endDate.toInstant(), startDate.toInstant()));
+                    logger.info(typeRoom.getTypeRoomName() + "----Количество дней----- " + days);
+                    Float priceForAllDays = priceForRoom * days;
+                    logger.info(typeRoom.getTypeRoomName() + "----Цена за весь период----- " + priceForAllDays);
+
+                    OrderSuggestion orderSuggestion = new OrderSuggestion();
+                    orderSuggestion.setTypeRoom(typeRoom);
+                    orderSuggestion.setCountRoom(countNeedRoom);
+                    orderSuggestion.setHotel(hotel);
+                    orderSuggestion.setPriceForDay(priceForRoom);
+                    orderSuggestion.setFullPrice(priceForAllDays);
+                    orderSuggestion.setPriceForRoom(baserPriceForRoom);
+                    orderSuggestion.setServicePrices(Collections.emptyList());
+
+                    orderSuggestions.add(orderSuggestion);
                 }
-                logger.info(typeRoom.getTypeRoomName() + "----Базовая цена за номер----- " + baserPriceForRoom);
-
-                //Определяем цену за день
-                Float additionalPriceForRoom = defineAdditionalPriceForRoom(typeRoom, servicePriceForHotel, userRequirementJsonObject.getBoolean("childBedInRoom"));
-                logger.info(typeRoom.getTypeRoomName() + "----Цена за доп. услуги----- " + additionalPriceForRoom);
-                Float priceForRoom = baserPriceForRoom + additionalPriceForRoom;
-                logger.info(typeRoom.getTypeRoomName() + "----Цена за день----- " + priceForRoom);
-
-                //Определяем цену за весь период
-                Date startDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateInput"));
-                Date endDate = formatter.parse(userRequirementJsonObject.getString("findHotelPageDateEndInput"));
-                int days = Math.toIntExact(ChronoUnit.DAYS.between(endDate.toInstant(), startDate.toInstant()));
-                logger.info(typeRoom.getTypeRoomName() + "----Количество дней----- " + days);
-                Float priceForAllDays = priceForRoom * days;
-                logger.info(typeRoom.getTypeRoomName() + "----Цена за весь период----- " + priceForAllDays);
-
-                OrderSuggestion orderSuggestion = new OrderSuggestion();
-                orderSuggestion.setTypeRoom(typeRoom);
-                orderSuggestion.setCountRoom(countNeedRoom);
-                orderSuggestion.setHotel(hotel);
-                orderSuggestion.setPriceForDay(priceForRoom);
-                orderSuggestion.setFullPrice(priceForAllDays);
-                orderSuggestion.setPriceForRoom(baserPriceForRoom);
-                orderSuggestion.setServicePrices(Collections.emptyList());
-
-                orderSuggestions.add(orderSuggestion);
+                HotelSuggestion hotelSuggestion = new HotelSuggestion(hotel, orderSuggestions);
+                hotelSuggestions.add(hotelSuggestion);
             }
-            HotelSuggestion hotelSuggestion = new HotelSuggestion(hotel, orderSuggestions);
-            hotelSuggestions.add(hotelSuggestion);
         }
 
         return hotelSuggestions;
@@ -202,13 +206,13 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public List<Hotel> findHotelByName(String userRequirementInfo) {
         JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
-        return hotelRepository.findAllByName(userRequirementJsonObject.getString("valueForFind"));
+        return hotelRepository.findAllByNameAndEntityState(userRequirementJsonObject.getString("valueForFind"),  "Normal");
     }
 
     @Override
     public List<Hotel> findHotelByCity(String userRequirementInfo) {
         JSONObject userRequirementJsonObject = new JSONObject(userRequirementInfo);
-        return hotelRepository.findAllByCity(userRequirementJsonObject.getString("valueForFind"));
+        return hotelRepository.findAllByCityAndEntityState(userRequirementJsonObject.getString("valueForFind"), "Normal");
     }
 
     @Override
@@ -303,17 +307,20 @@ public class HotelServiceImpl implements HotelService {
     private List<HotelDto> createHotelsDtos(List<Hotel> hotels, List<TypeRoom> typeRooms, List<ServicePrice> servicePrices, List<IdFileName> idFileNames) {
         List<HotelDto> hotelDtos = new ArrayList<>();
         for (Hotel hotel : hotels) {
-            HotelDto hotelDto = new HotelDto();
-            hotelDto.setId(hotel.getId());
-            hotelDto.setName(hotel.getName());
-            hotelDto.setCity(hotel.getCity());
-            hotelDto.setAddress(hotel.getAddress());
-            hotelDto.setCountOfStars(hotel.getCountOfStars());
-            hotelDto.setDescription(hotel.getDescription());
-            hotelDto.setRooms(createRoomsDtosForHotelDto(hotel, typeRooms));
-            hotelDto.setServicesPrices(createPriceServicesForHotelDto(hotel, servicePrices));
-            hotelDto.setPhotoName(definePhotoNameForHotel(hotel, idFileNames));
-            hotelDtos.add(hotelDto);
+            if(hotel.getEntityState().equals("Normal")) {
+                HotelDto hotelDto = new HotelDto();
+                hotelDto.setId(hotel.getId());
+                hotelDto.setName(hotel.getName());
+                hotelDto.setCity(hotel.getCity());
+                hotelDto.setAddress(hotel.getAddress());
+                hotelDto.setCountOfStars(hotel.getCountOfStars());
+                hotelDto.setDescription(hotel.getDescription());
+                hotelDto.setRooms(createRoomsDtosForHotelDto(hotel, typeRooms));
+                hotelDto.setServicesPrices(createPriceServicesForHotelDto(hotel, servicePrices));
+                hotelDto.setPhotoName(definePhotoNameForHotel(hotel, idFileNames));
+                hotelDto.setEntityState(hotel.getEntityState());
+                hotelDtos.add(hotelDto);
+            }
         }
         return hotelDtos;
     }

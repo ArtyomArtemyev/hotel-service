@@ -4,6 +4,7 @@ import by.bsuir.artemyev.client.SecurityServiceClient;
 import by.bsuir.artemyev.domain.*;
 import by.bsuir.artemyev.repository.HotelRepository;
 import by.bsuir.artemyev.repository.OrderRepository;
+import by.bsuir.artemyev.repository.OrderRepositoryExtended;
 import by.bsuir.artemyev.repository.TypeRoomRepository;
 import by.bsuir.artemyev.service.NotificationService;
 import by.bsuir.artemyev.service.OrderService;
@@ -59,6 +60,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private OrderRepositoryExtended orderRepositoryExtended;
+
     @Override
     public Order createOrder(String orderInfo) {
         String orderId = String.valueOf(randomUUID());
@@ -94,7 +98,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateOrder(String orderInfo, String id) {
         JSONObject orderInfoJSONObject = new JSONObject(orderInfo);
-        InternalUserDto internalUserDto = securityServiceClient.getUserByTokenContent(orderInfoJSONObject.getJSONObject(TOKEN).getString(ACCESS_TOKEN));
+        InternalUserDto internalUserDto = null;
+        if (!orderInfoJSONObject.getString(STATUS).equals("Обработана")) {
+            internalUserDto = securityServiceClient.getUserByTokenContent(orderInfoJSONObject.getJSONObject(TOKEN).getString(ACCESS_TOKEN));
+        } else {
+            Order tempOrder = orderRepository.findOne(id);
+            internalUserDto = tempOrder.getInternalUser();
+        }
+
         Order order = new Order();
         order.setStatus(orderInfoJSONObject.getString(STATUS));
         order.setCountOfMan(orderInfoJSONObject.getInt(COUNT_OF_MAN));
@@ -119,7 +130,7 @@ public class OrderServiceImpl implements OrderService {
         order.setId(id);
         orderRepository.delete(id);
         orderRepository.save(order);
-        if(orderInfoJSONObject.getString(STATUS).equals("Обработана")) {
+        if (orderInfoJSONObject.getString(STATUS).equals("Обработана")) {
             notificationService.notifyUserAboutDoneOrder(internalUserDto, order);
         }
         return orderRepository.findOne(id);
@@ -143,6 +154,11 @@ public class OrderServiceImpl implements OrderService {
     public List<Order> getAllUnprocessedOrders() {
         List<Order> unprocessedOrder = orderRepository.findAllByStatus("В ожидании обработки");
         return unprocessedOrder.size() == 0 ? Collections.emptyList() : unprocessedOrder;
+    }
+
+    @Override
+    public Order getOrderById(String id) {
+        return orderRepositoryExtended.findOrder(id);
     }
 
     private TypeRoom defineTypeRoom(String id) {

@@ -10,4 +10,5 @@ public interface OrderService {
     List<Order> getUserOrders(String userInfo);
     List<Order> getAllOrders();
     List<Order> getAllUnprocessedOrders();
+    Order getOrderById(String id);
 }

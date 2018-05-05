@@ -14,6 +14,7 @@ public class HotelDto implements Serializable, Cloneable {
     private String photoName;
     private List<TypeRoom> rooms;
     private List<ServicePrice> servicesPrices;
+    private String entityState;
 
     public HotelDto() {
         super();
@@ -103,6 +104,14 @@ public class HotelDto implements Serializable, Cloneable {
         this.servicesPrices = servicesPrices;
     }
 
+    public String getEntityState() {
+        return entityState;
+    }
+
+    public void setEntityState(String entityState) {
+        this.entityState = entityState;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -116,12 +125,14 @@ public class HotelDto implements Serializable, Cloneable {
                 Objects.equals(description, hotelDto.description) &&
                 Objects.equals(photoName, hotelDto.photoName) &&
                 Objects.equals(rooms, hotelDto.rooms) &&
-                Objects.equals(servicesPrices, hotelDto.servicesPrices);
+                Objects.equals(servicesPrices, hotelDto.servicesPrices) &&
+                Objects.equals(entityState, hotelDto.entityState);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, city, address, countOfStars, description, photoName, rooms, servicesPrices);
+
+        return Objects.hash(id, name, city, address, countOfStars, description, photoName, rooms, servicesPrices, entityState);
     }
 
     @Override
@@ -136,6 +147,7 @@ public class HotelDto implements Serializable, Cloneable {
                 ", photoName='" + photoName + '\'' +
                 ", rooms=" + rooms +
                 ", servicesPrices=" + servicesPrices +
+                ", entityState='" + entityState + '\'' +
                 '}';
     }
 }

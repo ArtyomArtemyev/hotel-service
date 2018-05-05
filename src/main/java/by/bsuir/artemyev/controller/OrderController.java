@@ -7,6 +7,8 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -27,6 +29,13 @@ public class OrderController {
     public Order updateOrder(@RequestBody String orderInfo, @PathVariable("id") String id) {
         logger.info("Request to update order with order info: " + orderInfo + "and token: ");
         return orderService.updateOrder(orderInfo, id);
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public List<Order> getOrder(@PathVariable("id") String id) {
+        logger.info("Request to get order by id: " + id);
+        Order order = orderService.getOrderById(id);
+        return orderService.getOrderById(id) == null ? Collections.emptyList() : Arrays.asList(order);
     }
 
     @RequestMapping(value = "/user", method = RequestMethod.POST)
